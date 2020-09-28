@@ -4,8 +4,11 @@ import { Jumbotron, Button, Form, Col, Spinner, Alert, Modal } from 'react-boots
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleDoubleRight } from '@fortawesome/free-solid-svg-icons';
 import ListarMoedas from './listar-moedas';
+import axios from 'axios';
 
 function ConversorMoedas() {
+
+  const FIXER_URL = 'http://data.fixer.io/api/latest?access_key=08aa99ea2ea6dc5b43cbd72e667f6589';
 
   const [valor, setValor] = useState('1');
   const [moedaDe, setMoedaDe] = useState('BRL');
@@ -41,9 +44,28 @@ function ConversorMoedas() {
     setFormValidado(true);
     if (event.currentTarget.checkValidity() === true) {
       // TODO >> implementar a chamada ao Fixer.io
-      setExibirModal(true);
+      axios.get(FIXER_URL)
+        .then((res) => {
+          const cotacao = obterCotacao(res.data);
+          setResultadoConvercao(`${valor} ${moedaDe} = ${cotacao} ${moedaPara}`);
+          setExibirModal(true);
+          setExibirSpinner(false);
+        })
     } 
   }
+
+  function obterCotacao(dadosCotacao){
+    if (!dadosCotacao || dadosCotacao.success !== true){
+      return false
+    }
+    const cotacaoDe = dadosCotacao.rates[moedaDe];
+    const cotacaoPara = dadosCotacao.rates[moedaPara];
+    // const cotacao = (1 / cotacaoDe * cotacaoPara) * valor
+    // return cotacao.toFixed(2);
+    return ((1 / cotacaoDe * cotacaoPara) * valor).toFixed(2);
+  }
+
+
 
   return (
     <div>
